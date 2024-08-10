@@ -45,7 +45,7 @@ cd build
 if [ ! -f xtensa-dynconfig/esp32s3.so ]; then
     git clone --depth 1 https://github.com/jcmvbkbc/xtensa-dynconfig -b original
     git clone --depth 1 https://github.com/jcmvbkbc/config-esp32s3 esp32s3
-    make -C xtensa-dynconfig ORIG=1 CONF_DIR=`pwd` esp32s3.so
+    make -j$(nproc) -C xtensa-dynconfig ORIG=1 CONF_DIR=`pwd` esp32s3.so
 fi
 export XTENSA_GNU_CONFIG=`pwd`/xtensa-dynconfig/esp32s3.so
 
@@ -59,7 +59,7 @@ if [ ! -x crosstool-NG/builds/xtensa-esp32s3-linux-uclibcfdpic/bin/xtensa-esp32s
         popd
     fi
     pushd crosstool-NG
-    ./bootstrap && ./configure --enable-local && make
+    ./bootstrap && ./configure --enable-local && make -j$(nproc)
     ./ct-ng $CTNG_CONFIG
     CT_PREFIX=`pwd`/builds nice ./ct-ng build
     popd
@@ -75,12 +75,12 @@ else
     popd
 fi
 if [ ! -d build-buildroot-esp32s3 ]; then
-    nice make -C buildroot O=`pwd`/build-buildroot-esp32s3 $BUILDROOT_CONFIG
+    nice make -j$(nproc) -C buildroot O=`pwd`/build-buildroot-esp32s3 $BUILDROOT_CONFIG
     buildroot/utils/config --file build-buildroot-esp32s3/.config --set-str TOOLCHAIN_EXTERNAL_PATH `pwd`/crosstool-NG/builds/xtensa-esp32s3-linux-uclibcfdpic
     buildroot/utils/config --file build-buildroot-esp32s3/.config --set-str TOOLCHAIN_EXTERNAL_PREFIX '$(ARCH)-esp32s3-linux-uclibcfdpic'
     buildroot/utils/config --file build-buildroot-esp32s3/.config --set-str TOOLCHAIN_EXTERNAL_CUSTOM_PREFIX '$(ARCH)-esp32s3-linux-uclibcfdpic'
 fi
-nice make -C buildroot O=`pwd`/build-buildroot-esp32s3
+nice make -j$(nproc) -C buildroot O=`pwd`/build-buildroot-esp32s3
 [ -f build-buildroot-esp32s3/images/xipImage -a -f build-buildroot-esp32s3/images/rootfs.cramfs -a -f build-buildroot-esp32s3/images/etc.jffs2 ] || exit 1
 
 # Bootloader build or update
