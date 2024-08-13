@@ -98,6 +98,9 @@ cd esp-idf
 cd ../network_adapter
 idf.py set-target esp32s3
 cp $ESP_HOSTED_CONFIG sdkconfig
+# Use the 16MB partition table for N16R8
+sed -i "s|CONFIG_PARTITION_TABLE_CUSTOM_FILENAME=\"partition_table.esp32s3\"|CONFIG_PARTITION_TABLE_CUSTOM_FILENAME=\"$PARTITION_TABLE\"|" sdkconfig
+
 idf.py build
 read -p 'ready to flash... press enter'
 while ! idf.py $SET_BAUDRATE flash; do
