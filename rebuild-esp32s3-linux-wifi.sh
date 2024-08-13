@@ -15,6 +15,7 @@ BUILDROOT_VER=xtensa-2024.05-fdpic
 BUILDROOT_CONFIG=esp32s3_defconfig
 ESP_HOSTED_VER=ipc-5.1.1
 ESP_HOSTED_CONFIG=sdkconfig.defaults.esp32s3
+PARTITION_TABLE="partition_table.esp32s3.16m"
 
 # Check if autoconf is already downloaded and installed
 if [ ! -f autoconf-2.71.tar.xz ]; then
