@@ -15,7 +15,9 @@ BUILDROOT_VER=xtensa-2024.05-fdpic
 BUILDROOT_CONFIG=esp32s3_defconfig
 ESP_HOSTED_VER=ipc-5.1.1
 ESP_HOSTED_CONFIG=sdkconfig.defaults.esp32s3
-PARTITION_TABLE="partition_table.esp32s3.16m"
+# Set to true if you want to use 16MB flash
+USE_16MB_FLASH=true
+
 
 # Check if autoconf is already downloaded and installed
 if [ ! -f autoconf-2.71.tar.xz ]; then
@@ -99,8 +101,17 @@ cd esp-idf
 cd ../network_adapter
 idf.py set-target esp32s3
 cp $ESP_HOSTED_CONFIG sdkconfig
-# Use the 16MB partition table for N16R8
-sed -i "s|CONFIG_PARTITION_TABLE_CUSTOM_FILENAME=\"partition_table.esp32s3\"|CONFIG_PARTITION_TABLE_CUSTOM_FILENAME=\"$PARTITION_TABLE\"|" sdkconfig
+
+if [ "$USE_16MB_FLASH" = true ]; then
+	# Use the 16MB partition table for N16R8
+	sed -i "s|CONFIG_PARTITION_TABLE_CUSTOM_FILENAME=\"partition_table.esp32s3\"|CONFIG_PARTITION_TABLE_CUSTOM_FILENAME=\"partition_table.esp32s3.16m\"|" sdkconfig
+	# Remove the 8MB flash size setting
+	sed -i 's/CONFIG_ESPTOOLPY_FLASHSIZE_8MB=y/# CONFIG_ESPTOOLPY_FLASHSIZE_8MB is not set/' sdkconfig
+	
+	# Set the 16MB flash size
+	sed -i 's/# CONFIG_ESPTOOLPY_FLASHSIZE_16MB is not set/CONFIG_ESPTOOLPY_FLASHSIZE_16MB=y/' sdkconfig
+	sed -i 's/CONFIG_ESPTOOLPY_FLASHSIZE="8MB"/CONFIG_ESPTOOLPY_FLASHSIZE="16MB"/' sdkconfig
+fi
 
 idf.py build
 read -p 'ready to flash... press enter'
